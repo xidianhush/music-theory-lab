@@ -1,0 +1,52 @@
+/* ============================================================
+ * 设计令牌 design tokens —— 深邃幽蓝主题
+ * 所有颜色 / 间距 / 圆角 / 字号统一从这里取值
+ * ============================================================ */
+:root {
+  /* 配色 */
+  --bg-deep: #0a0f1a;
+  --bg-panel: #0d1526;
+  --bg-elevated: #111a30;
+  --accent: #5e8cff;
+  --accent-strong: #7aa2ff;
+  --accent-soft: rgba(94, 140, 255, 0.12);
+  --accent-border: rgba(94, 140, 255, 0.3);
+  --text-main: #e8eefc;
+  --text-dim: #9fb0cc;
+  --text-faint: #7d8fb0;
+  --border: rgba(148, 178, 255, 0.18);
+  --border-strong: rgba(148, 178, 255, 0.3);
+  --success: #4ade80;
+  --warning: #e8b878;
+  --danger: #f87171;
+
+  /* 字体 */
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* 间距 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* 字号 */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+
+  /* 布局 */
+  --nav-height: 56px;
+  --content-max: 920px;
+}
