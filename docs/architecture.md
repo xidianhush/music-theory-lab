@@ -81,3 +81,14 @@ npm run build      # tsc --noEmit + vite build
 npm test           # Vitest 单测
 npm run preview    # 预览构建产物
 ```
+
+## 部署（GitHub Pages）
+
+- 线上地址：`https://xidianhush.github.io/music-theory-lab/`
+- 部署方式：**gh-pages 分支**（当前环境 token 无 `workflow` 权限，不能用 Actions 自动部署）
+  - `vite.config.ts` 生产构建 `base = '/music-theory-lab/'`（本地开发保持 `/`）；
+  - 路由使用 `createHashRouter`（URL 形如 `/music-theory-lab/#/rhythm`），纯静态托管下任意路由刷新不 404；
+  - 运行 `./deploy-gh-pages.sh`：构建产物推送到 `gh-pages` 分支，Pages Source 指向该分支。
+- 升级为自动部署：给 token 授予 `workflow` 权限后，把 `docs/github-pages-workflow.yml` 放回
+  `.github/workflows/` 并推送到 `main`，Pages Source 切回 GitHub Actions（push 即自动发布）。
+
