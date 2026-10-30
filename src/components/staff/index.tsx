@@ -25,6 +25,10 @@ interface Box {
   h: number
 }
 
+/** 深色主题下的谱面墨色：音符/符号用主文字色，谱线稍暗一档 */
+const INK = '#e8eefc'
+const LINE = '#b7c5e6'
+
 /**
  * 五线谱视图：VexFlow 渲染真实谱面。
  * 音符区域叠加透明点击热区（基于绘制后的包围盒定位），
@@ -69,7 +73,9 @@ export default function StaffView({
       stave
         .addClef('treble')
         .addTimeSignature(`${timeSignature.numerator}/${timeSignature.denominator}`)
-      stave.setContext(ctx).draw()
+      // 谱号/拍号字形用主文字色（stave.draw 前设 ctx 默认色）
+      ctx.setFillStyle(INK).setStrokeStyle(INK)
+      stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
 
       if (notes.length > 0) {
         const vexNotes = notes.map(
@@ -78,7 +84,7 @@ export default function StaffView({
               keys: [toVexKey(n.name)],
               duration: n.duration ?? 'q',
               clef: 'treble',
-            }),
+            }).setStyle({ fillStyle: INK, strokeStyle: INK }),
         )
         const voice = new Voice({
           numBeats: timeSignature.numerator,

@@ -13,6 +13,10 @@ const DURATION_VEX: Record<string, string> = {
   '32nd': '32',
 }
 
+/** 深色主题下的谱面墨色：音符/符号用主文字色，谱线稍暗一档 */
+const INK = '#e8eefc'
+const LINE = '#b7c5e6'
+
 interface PieceStaffProps {
   measure: PieceMeasure
   /** 页首小节：绘制谱号 + 调号 + 拍号 */
@@ -60,19 +64,24 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
             .addKeySignature(keyFromFifths(measure.fifths).root)
             .addTimeSignature(`${measure.beats}/${measure.beatType}`)
         }
-        stave.setContext(ctx).draw()
+        // 谱号/调号/拍号字形用主文字色（在 stave.draw 前设 ctx 默认色）
+        ctx.setFillStyle(INK).setStrokeStyle(INK)
+        stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
 
         const vexNotes = measure.notes
           .filter((n) => n.st === staffNum)
           .map((n) => {
             const dur = DURATION_VEX[n.t] ?? 'q'
-            if (!n.p) return new StaveNote({ keys: ['b/4'], duration: `${dur}r`, clef, dots: n.dot })
-            return new StaveNote({
-              keys: [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })],
-              duration: dur,
-              clef,
-              dots: n.dot,
-            })
+            const vn = !n.p
+              ? new StaveNote({ keys: ['b/4'], duration: `${dur}r`, clef, dots: n.dot })
+              : new StaveNote({
+                  keys: [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })],
+                  duration: dur,
+                  clef,
+                  dots: n.dot,
+                })
+            vn.setStyle({ fillStyle: INK, strokeStyle: INK })
+            return vn
           })
 
         if (vexNotes.length > 0) {
