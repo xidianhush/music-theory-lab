@@ -55,7 +55,7 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
     if (!el) return
     let cancelled = false
     const render = async () => {
-      const { Formatter, Renderer, Stave, StaveNote, Voice } = await import('vexflow')
+      const { Dot, Formatter, Renderer, Stave, StaveNote, StaveTie, Voice } = await import('vexflow')
       if (cancelled || !el) return
       el.innerHTML = ''
       const renderer = new Renderer(el, Renderer.Backends.SVG)
@@ -67,6 +67,7 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
         y: number
         stave: InstanceType<typeof Stave>
         voice: InstanceType<typeof Voice>
+        meta: { vn: InstanceType<typeof StaveNote>; ts: boolean; tp: boolean }[]
       }[] = []
       for (const staffNum of staffs) {
         const isTreble = staffNum === 1
@@ -82,37 +83,48 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
 
         // 按发音点合并：和弦音（c=true）并入前一个音符的 keys，共享符干与时值
         const vexNotes: InstanceType<typeof StaveNote>[] = []
+        // 每个新音符（起点）的元信息：附点数、连音开始/结束标记，用于兜底画附点与连音线
+        const meta: { vn: InstanceType<typeof StaveNote>; ts: boolean; tp: boolean }[] = []
         let curKeys: string[] = []
         let curDur = 'q'
         let curRest = false
-        for (const n of measure.notes.filter((x) => x.st === staffNum)) {
-          const dur = vexDuration(n.t, n.dot, !n.p)
-          if (!n.c) {
-            if (curKeys.length > 0) {
-              const vn = new StaveNote({
-                keys: curRest ? ['b/4'] : curKeys,
-                duration: curDur,
-                clef,
-              })
-              vn.setStyle({ fillStyle: INK, strokeStyle: INK })
-              vexNotes.push(vn)
-            }
-            curKeys = n.p ? [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })] : []
-            curDur = dur
-            curRest = !n.p
-          } else if (n.p) {
-            curKeys.push(vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a }))
-          }
-        }
-        if (curKeys.length > 0) {
+        let curTs = false
+        let curTp = false
+        let curDots = 0
+        const flush = () => {
+          if (curKeys.length === 0) return
           const vn = new StaveNote({
             keys: curRest ? ['b/4'] : curKeys,
             duration: curDur,
             clef,
           })
           vn.setStyle({ fillStyle: INK, strokeStyle: INK })
+          // 附点：duration 'xd' 已带点；若 VexFlow 未自动挂 Dot 修饰则手动补上（保证视觉点）
+          if (curDots > 0 && vn.getModifiersByType('Dot').length === 0) {
+            for (let k = 0; k < vn.getKeys().length; k++) vn.addModifier(new Dot(), k)
+          }
           vexNotes.push(vn)
+          meta.push({ vn, ts: curTs, tp: curTp })
+          curKeys = []
+          curTs = false
+          curTp = false
+          curDots = 0
         }
+        for (const n of measure.notes.filter((x) => x.st === staffNum)) {
+          const dur = vexDuration(n.t, n.dot, !n.p)
+          if (!n.c) {
+            flush()
+            curKeys = n.p ? [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })] : []
+            curDur = dur
+            curRest = !n.p
+            curTs = !!n.ts
+            curTp = !!n.tp
+            curDots = n.dot || 0
+          } else if (n.p) {
+            curKeys.push(vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a }))
+          }
+        }
+        flush()
 
         const voice = new Voice({
           numBeats: measure.beats,
@@ -120,7 +132,7 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
         })
           .setMode(Voice.Mode.SOFT)
           .addTickables(vexNotes)
-        blocks.push({ y, stave, voice })
+        blocks.push({ y, stave, voice, meta })
       }
 
       // 谱号/调号/拍号字形用主文字色（draw 前设 ctx 默认色）
@@ -150,6 +162,26 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
           { alignRests: false },
         )
         for (const b of blocks) b.voice.draw(ctx, b.stave)
+
+        // 连音线（同小节内 ts→tp 配对，按谱表/声部顺序就近连接）
+        for (const b of blocks) {
+          for (let i = 0; i < b.meta.length; i++) {
+            const m = b.meta[i]
+            if (!m.ts) continue
+            const end = b.meta.slice(i + 1).find((x) => x.tp)
+            if (!end) continue
+            const keyCount = m.vn.getKeys().length
+            const idxs = Array.from({ length: keyCount }, (_, k) => k)
+            new StaveTie({
+              firstNote: m.vn,
+              lastNote: end.vn,
+              firstIndexes: idxs,
+              lastIndexes: idxs,
+            })
+              .setContext(ctx)
+              .draw()
+          }
+        }
 
         // 小节线（结束线）
         for (const b of blocks) {
