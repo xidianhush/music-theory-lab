@@ -17,7 +17,11 @@ export function useMetronome() {
   const nextTimeRef = useRef(0)
   const beatRef = useRef(0)
   const runningRef = useRef(false)
-  const paramsRef = useRef<{ bpm: number; ts: TimeSignature; onBeat?: (index: number) => void } | null>(null)
+  const paramsRef = useRef<{
+    bpm: number
+    ts: TimeSignature
+    onBeat?: (index: number, timeSec: number) => void
+  } | null>(null)
 
   const schedulerTick = useCallback(() => {
     if (!runningRef.current) return
@@ -28,11 +32,9 @@ export function useMetronome() {
     const pattern = beatPattern(params.ts)
     while (nextTimeRef.current < now + LOOKAHEAD_SEC) {
       const idx = beatRef.current % pattern.length
-      audioEngine.scheduleFrequency(
-        AudioEngine.midiToFrequency(tickMidi(pattern[idx])),
-        Math.max(nextTimeRef.current, now),
-      )
-      params.onBeat?.(idx)
+      const when = Math.max(nextTimeRef.current, now)
+      audioEngine.scheduleFrequency(AudioEngine.midiToFrequency(tickMidi(pattern[idx])), when)
+      params.onBeat?.(idx, when)
       beatRef.current += 1
       nextTimeRef.current += interval
     }
@@ -48,7 +50,7 @@ export function useMetronome() {
   }, [])
 
   const start = useCallback(
-    (bpm: number, ts: TimeSignature, onBeat?: (index: number) => void) => {
+    (bpm: number, ts: TimeSignature, onBeat?: (index: number, timeSec: number) => void) => {
       stop()
       paramsRef.current = { bpm, ts, onBeat }
       const now = audioEngine.getCurrentTime()

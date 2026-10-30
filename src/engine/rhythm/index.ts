@@ -61,3 +61,18 @@ export function tickMidi(strength: BeatStrength): number {
       return 64 // E4
   }
 }
+
+/* ---------- 节奏跟打 ---------- */
+
+/** 跟打判定窗口（毫秒）：击拍与拍点偏差 ≤ 该值才算对上拍 */
+export const TAP_WINDOW_MS = 150
+
+export type TapGrade = 'perfect' | 'good' | 'ok' | 'miss'
+
+/** 按偏差绝对值分档：≤40 优秀，≤90 良好，≤150 及格，更大算脱拍 */
+export function gradeDeviation(absMs: number): TapGrade {
+  if (absMs <= 40) return 'perfect'
+  if (absMs <= 90) return 'good'
+  if (absMs <= 150) return 'ok'
+  return 'miss'
+}

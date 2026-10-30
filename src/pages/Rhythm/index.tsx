@@ -1,6 +1,7 @@
 import PageShell from '../../components/ui/PageShell'
 import Metronome from '../../components/metronome'
 import QuizCard from '../../components/quiz'
+import TapAlong from '../../components/rhythm/TapAlong'
 import { TIME_SIGNATURES } from '../../data/timeSignatures'
 import { EXERCISES } from '../../data/exercises'
 
@@ -63,13 +64,19 @@ export default function Rhythm() {
           body: <Metronome />,
         },
         {
+          key: 'tap',
+          phase: '练',
+          title: '节奏跟打',
+          body: <TapAlong />,
+        },
+        {
           key: 'drill',
           phase: '练',
           title: '拍号识别练习',
           body: tsExercises.map((e) => <QuizCard key={e.id} exercise={e} />),
         },
       ]}
-      footer="已实现：节拍器打拍、强弱拍视觉高亮、速度与拍号调节、练习即时反馈。下一步：节奏跟打与实时对拍。"
+      footer="已实现：节拍器、强弱拍高亮、节奏跟打（毫秒级偏差反馈）、拍号练习——M3 收官。"
     />
   )
 }

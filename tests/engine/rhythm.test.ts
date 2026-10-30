@@ -8,6 +8,8 @@ import {
   beatPattern,
   beatIntervalMs,
   tickMidi,
+  TAP_WINDOW_MS,
+  gradeDeviation,
 } from '../../src/engine/rhythm'
 
 const ts44: TimeSignature = { numerator: 4, denominator: 4, label: '4/4', accentPattern: '强-弱-次强-弱' }
@@ -68,5 +70,21 @@ describe('rhythm 引擎', () => {
   it('强弱拍提示音：强拍音高 > 次强 > 弱', () => {
     expect(tickMidi('strong')).toBeGreaterThan(tickMidi('medium'))
     expect(tickMidi('medium')).toBeGreaterThan(tickMidi('weak'))
+  })
+})
+
+describe('rhythm 引擎（节奏跟打）', () => {
+  it('判定窗口 150ms', () => {
+    expect(TAP_WINDOW_MS).toBe(150)
+  })
+
+  it('偏差分档：≤40 优秀，≤90 良好，≤150 及格，>150 脱拍', () => {
+    expect(gradeDeviation(0)).toBe('perfect')
+    expect(gradeDeviation(40)).toBe('perfect')
+    expect(gradeDeviation(41)).toBe('good')
+    expect(gradeDeviation(90)).toBe('good')
+    expect(gradeDeviation(91)).toBe('ok')
+    expect(gradeDeviation(150)).toBe('ok')
+    expect(gradeDeviation(151)).toBe('miss')
   })
 })
