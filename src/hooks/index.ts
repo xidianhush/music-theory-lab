@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { TimeSignature } from '../data/timeSignatures'
 import { AudioEngine, audioEngine } from '../engine/audio'
 import { beatPattern, beatIntervalMs, tickMidi } from '../engine/rhythm'
@@ -70,4 +70,38 @@ export function useAudioEngine() {
     audioEngine.playMidi(midi, duration)
   }, [])
   return { playNote }
+}
+
+/** 顺序播放一串 MIDI（音阶 / 旋律演示），回调当前播放下标用于高亮 */
+export function useSequencedPlayer() {
+  const timerRef = useRef<number | null>(null)
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null)
+
+  const stop = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    setCurrentIndex(null)
+  }, [])
+
+  const play = useCallback(
+    (midis: number[], intervalMs = 400) => {
+      stop()
+      if (midis.length === 0) return
+      let index = 0
+      const step = () => {
+        audioEngine.playMidi(midis[index], (intervalMs / 1000) * 0.85)
+        setCurrentIndex(index)
+        index += 1
+        if (index < midis.length) {
+          timerRef.current = window.setTimeout(step, intervalMs)
+        }
+      }
+      step()
+    },
+    [stop],
+  )
+
+  return { play, stop, currentIndex }
 }

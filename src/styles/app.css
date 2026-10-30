@@ -463,3 +463,72 @@ a.card:hover {
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* ---------- 钢琴键盘 ---------- */
+.piano {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.piano__whites {
+  display: flex;
+  gap: 1px;
+  height: 150px;
+}
+
+.piano__white {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, #f2f5ff 0%, #cdd7ea 100%);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.piano__white:hover {
+  background: #dfe7f8;
+}
+
+.piano__blacks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 96px;
+}
+
+.piano__black {
+  position: absolute;
+  top: 0;
+  height: 96px;
+  transform: translateX(-50%);
+  border: 1px solid #05070d;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(180deg, #232d42 0%, #0f1626 100%);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.piano__black:hover {
+  background: #2b3852;
+}
+
+.piano__key--hl {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+}
+
+.piano__key--active {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 10px rgba(94, 140, 255, 0.85);
+}
+
+.piano__black.piano__key--hl,
+.piano__black.piano__key--active {
+  background: var(--accent-strong);
+}

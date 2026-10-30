@@ -1,5 +1,5 @@
 import type { PitchClass } from '../../data/notes'
-import { PITCH_CLASS_INDEX, pitchClassOfKeyName } from '../../data/notes'
+import { PITCH_CLASS_INDEX, noteByName, pitchClassOfKeyName } from '../../data/notes'
 
 export type ScaleQuality = 'major' | 'naturalMinor'
 
@@ -45,4 +45,16 @@ export function scaleNoteNames(root: string, quality: ScaleQuality): string[] {
     if (diff === 11) return `${letter}b`
     return letter
   })
+}
+
+/** 从根音构建完整上行音阶的 MIDI 序列（含八度主音，共 8 个） */
+export function scaleMidi(root: string, quality: ScaleQuality, octave = 4): number[] {
+  const rootMidi = noteByName(`${root}${octave}`).midi
+  const midis = [rootMidi]
+  let current = rootMidi
+  for (const step of scaleSteps(quality)) {
+    current += step
+    midis.push(current)
+  }
+  return midis
 }

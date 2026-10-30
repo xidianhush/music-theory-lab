@@ -1,12 +1,24 @@
+import { useMemo, useState } from 'react'
 import PageShell from '../../components/ui/PageShell'
 import Piano from '../../components/piano'
-import QuizCard from '../../components/quiz'
+import ScaleEarDrill from '../../components/quiz/ScaleEarDrill'
 import { SCALES } from '../../data/scales'
-import { scaleNoteNames, MAJOR_STEPS, NATURAL_MINOR_STEPS } from '../../engine/scale'
-import { EXERCISES } from '../../data/exercises'
+import type { ScaleDef } from '../../data/scales'
+import { scaleNoteNames, scaleMidi, MAJOR_STEPS, NATURAL_MINOR_STEPS } from '../../engine/scale'
+import { useSequencedPlayer } from '../../hooks'
 
 export default function Scales() {
-  const scaleExercises = EXERCISES.filter((e) => e.type === 'identifyScale')
+  const [scale, setScale] = useState<ScaleDef>(SCALES[0])
+  const { play, stop, currentIndex } = useSequencedPlayer()
+  const midis = useMemo(() => scaleMidi(scale.key, scale.quality, 4), [scale])
+  const activeMidi =
+    currentIndex !== null && currentIndex < midis.length ? midis[currentIndex] : null
+
+  const selectScale = (s: ScaleDef) => {
+    stop()
+    setScale(s)
+  }
+
   return (
     <PageShell
       title="调式与音阶"
@@ -62,17 +74,47 @@ export default function Scales() {
         {
           key: 'hear',
           phase: '听',
-          title: '音阶试听',
-          body: <Piano />,
+          title: '键盘上的音阶',
+          body: (
+            <>
+              <div className="metro__row">
+                <span className="metro__label">调式</span>
+                <div className="metro__sig-group">
+                  {SCALES.map((s) => (
+                    <button
+                      key={`${s.key}-${s.quality}`}
+                      type="button"
+                      className={`btn btn--ghost metro__sig ${s.label === scale.label ? 'metro__sig--active' : ''}`}
+                      onClick={() => selectScale(s)}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="metro__row" style={{ marginTop: 'var(--space-3)' }}>
+                <button type="button" className="btn btn--primary" onClick={() => play(midis, 450)}>
+                  播放音阶
+                </button>
+                <button type="button" className="btn btn--ghost" onClick={stop}>
+                  停止
+                </button>
+                <span className="metro__hint">蓝色 = 音阶各音，播放中的音更亮；点击键盘任意键也可发声</span>
+              </div>
+              <div style={{ marginTop: 'var(--space-4)' }}>
+                <Piano highlighted={midis} active={activeMidi} />
+              </div>
+            </>
+          ),
         },
         {
           key: 'drill',
           phase: '练',
-          title: '调式识别练习',
-          body: scaleExercises.map((e) => <QuizCard key={e.id} exercise={e} />),
+          title: '听音辨调',
+          body: <ScaleEarDrill />,
         },
       ]}
-      footer="下一步（M2）：音阶在键盘 / 谱面高亮播放，听音辨调。"
+      footer="已实现：键盘点键发声、音阶播放高亮、听音辨调练习（答完展示键盘音阶形状）。"
     />
   )
 }

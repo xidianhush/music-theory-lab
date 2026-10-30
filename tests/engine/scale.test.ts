@@ -4,6 +4,7 @@ import {
   NATURAL_MINOR_STEPS,
   scaleNoteNames,
   scalePitchClasses,
+  scaleMidi,
 } from '../../src/engine/scale'
 
 describe('scale 引擎', () => {
@@ -39,5 +40,29 @@ describe('scale 引擎', () => {
 
   it('无法解析的调名抛错', () => {
     expect(() => scaleNoteNames('H', 'major')).toThrow()
+  })
+})
+
+describe('scale 引擎（MIDI 序列）', () => {
+  it('C 大调从 C4 起：[60,62,64,65,67,69,71,72]', () => {
+    expect(scaleMidi('C', 'major', 4)).toEqual([60, 62, 64, 65, 67, 69, 71, 72])
+  })
+
+  it('A 大调从 A4 起：[69,71,73,74,76,78,80,81]', () => {
+    expect(scaleMidi('A', 'major', 4)).toEqual([69, 71, 73, 74, 76, 78, 80, 81])
+  })
+
+  it('♭B 大调从 Bb4 起：[70,72,74,75,77,79,81,82]', () => {
+    expect(scaleMidi('Bb', 'major', 4)).toEqual([70, 72, 74, 75, 77, 79, 81, 82])
+  })
+
+  it('e 自然小调从 E4 起', () => {
+    expect(scaleMidi('E', 'naturalMinor', 4)).toEqual([64, 66, 67, 69, 71, 72, 74, 76])
+  })
+
+  it('共 8 个音且首尾相差一个八度', () => {
+    const midis = scaleMidi('A', 'major', 4)
+    expect(midis).toHaveLength(8)
+    expect(midis[7] - midis[0]).toBe(12)
   })
 })
