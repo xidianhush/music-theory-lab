@@ -204,4 +204,40 @@ describe('score 引擎（调号与发音点）', () => {
       // 连音延续音（tp）不产生新发音点，时值自然延伸
     ])
   })
+
+  it('measureOnsets：左右手不同声部同一拍点合并（不再按顺序错位）', () => {
+    const n = (p: { s: string; o: number; a?: number } | null, extra: Partial<Record<string, unknown>> = {}) => ({
+      pitch: p ? { step: p.s as never, octave: p.o, alter: p.a ?? 0 } : null,
+      duration: (extra.d as number) ?? 4,
+      type: (extra.t as string) ?? 'quarter',
+      dots: (extra.dot as number) ?? 0,
+      voice: (extra.v as number) ?? 1,
+      staff: (extra.st as number) ?? 1,
+      chord: (extra.c as boolean) ?? false,
+      tieStart: (extra.ts as boolean) ?? false,
+      tieStop: (extra.tp as boolean) ?? false,
+    })
+    // 模拟 luv(sic)pt3 小节 1：右手全音符（voice 1）+ 左手四分音符（voice 5）
+    const measure = {
+      number: 1,
+      fifths: -4,
+      beats: 4,
+      beatType: 4,
+      notes: [
+        n({ s: 'F', o: 4 }, { d: 16, t: 'whole', v: 1, st: 1 }),       // 0.0 F4 右手
+        n({ s: 'C', o: 5 }, { d: 16, t: 'whole', v: 1, st: 1, c: true }), // 0.0 C5 右手（和弦）
+        n({ s: 'F', o: 2 }, { v: 5, st: 2 }),                            // 0.0 F2 左手
+        n({ s: 'C', o: 3 }, { v: 5, st: 2, c: true }),                   // 0.0 C3 左手
+        n({ s: 'F', o: 3 }, { v: 5, st: 2, c: true }),                   // 0.0 F3 左手
+        n({ s: 'G', o: 3 }, { v: 5, st: 2 }),                            // 1.0 G3 左手
+        n({ s: 'F', o: 3 }, { v: 5, st: 2 }),                            // 2.0 F3 左手
+      ],
+    }
+    const onsets = measureOnsets(measure, 4)
+    expect(onsets).toEqual([
+      { quarterPos: 0, midis: [65, 72, 41, 48, 53] }, // 左右手第一拍同时发音
+      { quarterPos: 1, midis: [55] },
+      { quarterPos: 2, midis: [53] },
+    ])
+  })
 })

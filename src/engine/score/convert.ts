@@ -75,26 +75,45 @@ export interface MeasureOnset {
 }
 
 export function measureOnsets(measure: ScoreMeasure, divisions: number): MeasureOnset[] {
-  const onsets: MeasureOnset[] = []
-  let pos = 0
-  const lastByVoice = new Map<number, number>()
+  // 各声部独立累积位置（左右手同 tick 的音符合并到同一发音点），
+  // 避免按音符顺序线性累加导致后一声部被推到小节后段（左右手错位）。
+  const posByVoice = new Map<number, number>()
+  const lastMidiByVoice = new Map<number, number>()
+  const events: { pos: number; midis: number[] }[] = []
+  const eventIdxByVoice = new Map<number, number>()
   for (const n of measure.notes) {
+    const v = n.voice
+    const pos = posByVoice.get(v) ?? 0
     if (n.chord) {
-      const cur = onsets[onsets.length - 1]
+      // 并入同声部最近一个发音点（同 tick 和弦音）
+      const idx = eventIdxByVoice.get(v)
+      const ev = idx !== undefined ? events[idx] : undefined
       const midi = noteToMidi(n)
-      if (cur && midi !== null && !cur.midis.includes(midi)) cur.midis.push(midi)
+      if (ev && midi !== null && !ev.midis.includes(midi)) ev.midis.push(midi)
       continue
     }
     const midi = noteToMidi(n)
     if (midi === null) {
-      onsets.push({ quarterPos: pos, midis: [] })
-    } else if (!(n.tieStop && lastByVoice.get(n.voice) === midi)) {
-      onsets.push({ quarterPos: pos, midis: [midi] })
-      lastByVoice.set(n.voice, midi)
+      events.push({ pos, midis: [] })
+    } else if (!(n.tieStop && lastMidiByVoice.get(v) === midi)) {
+      events.push({ pos, midis: [midi] })
+      lastMidiByVoice.set(v, midi)
     }
-    pos += n.duration / divisions
+    eventIdxByVoice.set(v, events.length - 1)
+    posByVoice.set(v, pos + n.duration / divisions)
   }
-  return onsets
+  // 不同声部同一拍点的发音合并（浮点取 1e-9 容差）
+  const byPos = new Map<number, MeasureOnset>()
+  for (const ev of events) {
+    const key = Math.round(ev.pos * 1e9) / 1e9
+    const o = byPos.get(key)
+    if (o) {
+      for (const m of ev.midis) if (!o.midis.includes(m)) o.midis.push(m)
+    } else {
+      byPos.set(key, { quarterPos: ev.pos, midis: [...ev.midis] })
+    }
+  }
+  return [...byPos.values()].sort((a, b) => a.quarterPos - b.quarterPos)
 }
 
 /* ---------- 曲目数据 → 引擎类型 ---------- */
