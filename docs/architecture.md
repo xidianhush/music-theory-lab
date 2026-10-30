@@ -58,8 +58,8 @@ pages → components → engine → data
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
 | M0 | 工程骨架：目录、路由、设计令牌、四层占位 | 完成 |
-| M1 | 引擎与数据：rhythm/scale/notation 纯函数 + 单测，AudioEngine 发声 | 部分完成（引擎与数据已就绪，题库待扩展） |
-| M2 | 第一个闭环：节拍模块（节拍器打拍、强弱拍高亮、拍号练习答题反馈） | 待做 |
+| M1 | 引擎与数据：rhythm/scale/notation 纯函数 + 单测，AudioEngine 发声 | 完成（题库待 M3 前扩展） |
+| M2 | 第一个闭环：节拍模块（节拍器打拍、强弱拍高亮、拍号练习答题反馈） | 完成 |
 | M3 | 复制范式：五线谱（VexFlow 谱面 + 点谱发声）、音阶（键盘高亮播放 + 听音辨调） | 待做 |
 | 二期 | 音程、和弦、视唱练耳、移调与转调 | 待做 |
 
@@ -68,6 +68,8 @@ pages → components → engine → data
 - TypeScript 固定 5.x（最新 7.x 为新原生编译器，待生态稳定后再评估）。
 - 调式音名拼写按调号规则实现（♭B 大调写作 Bb C D Eb F G A），不走简单升号表——这本身就是教学点。
 - 拍号 / 时值换算全部落在 engine/rhythm，保证节拍器、演示、练习三处口径一致。
+- 节拍器使用 lookahead 调度（提前 0.12s 用 AudioContext 时钟排拍），避免 setInterval 累积抖动；
+  BPM / 拍号通过 ref 即时生效。强弱拍提示音由 engine/rhythm 的 `beatPattern` / `tickMidi` 决定。
 
 ## 开发命令
 

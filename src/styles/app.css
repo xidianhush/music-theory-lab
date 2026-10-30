@@ -251,6 +251,7 @@ a.card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .quiz-card__prompt {
@@ -269,4 +270,148 @@ a.card:hover {
 .quiz-card__hint {
   color: var(--text-faint);
   font-size: var(--text-xs);
+}
+
+.quiz-card__option--selected {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--text-main);
+}
+
+.quiz-card__option--correct {
+  border-color: var(--success);
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.quiz-card__option--wrong {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.quiz-card__option--dim {
+  opacity: 0.45;
+}
+
+.quiz-card .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quiz-card__feedback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  line-height: 1.7;
+}
+
+.quiz-card__feedback--ok {
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.quiz-card__feedback--bad {
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.quiz-card__retry {
+  margin-left: auto;
+}
+
+/* ---------- 节拍器 ---------- */
+.metro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.metro__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.metro__label {
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+}
+
+.metro__sig-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.metro__sig {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.metro__sig--active {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.metro__slider {
+  flex: 1 1 140px;
+  min-width: 120px;
+  accent-color: var(--accent);
+}
+
+.metro__bpm {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--accent-strong);
+  min-width: 42px;
+  text-align: center;
+}
+
+.metro__hint {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.metro__beats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 36px;
+}
+
+.metro__beat {
+  border-radius: 50%;
+  background: var(--border-strong);
+  transition: background 0.08s, transform 0.08s, box-shadow 0.08s;
+}
+
+.metro__beat--strong {
+  width: 18px;
+  height: 18px;
+}
+
+.metro__beat--medium {
+  width: 14px;
+  height: 14px;
+}
+
+.metro__beat--weak {
+  width: 11px;
+  height: 11px;
+}
+
+.metro__beat--active {
+  background: var(--accent-strong);
+  box-shadow: 0 0 10px rgba(94, 140, 255, 0.8);
+  transform: scale(1.15);
 }

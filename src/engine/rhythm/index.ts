@@ -29,3 +29,35 @@ export function beatUnitQuarters(ts: TimeSignature): number {
 export function measureDurationSeconds(ts: TimeSignature, bpm: number): number {
   return beatsPerMeasure(ts) * beatDurationSeconds(bpm) * beatUnitQuarters(ts)
 }
+
+/* ---------- 强弱拍 ---------- */
+
+export type BeatStrength = 'strong' | 'medium' | 'weak'
+
+const STRENGTH_MAP: Record<string, BeatStrength> = {
+  强: 'strong',
+  次强: 'medium',
+  弱: 'weak',
+}
+
+/** 拍号强弱规律（如「强-弱-次强-弱」）→ 每拍强度数组，长度 = 每小节拍数 */
+export function beatPattern(ts: TimeSignature): BeatStrength[] {
+  return ts.accentPattern.split('-').map((s) => STRENGTH_MAP[s.trim()] ?? 'weak')
+}
+
+/** 节拍器每拍间隔（毫秒）。bpm = 每分钟四分音符数 */
+export function beatIntervalMs(ts: TimeSignature, bpm: number): number {
+  return beatDurationSeconds(bpm) * beatUnitQuarters(ts) * 1000
+}
+
+/** 强弱拍提示音 MIDI：强拍高、弱拍低（节拍器专用） */
+export function tickMidi(strength: BeatStrength): number {
+  switch (strength) {
+    case 'strong':
+      return 72 // C5
+    case 'medium':
+      return 67 // G4
+    case 'weak':
+      return 64 // E4
+  }
+}

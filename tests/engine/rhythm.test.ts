@@ -5,6 +5,9 @@ import {
   beatDurationSeconds,
   beatUnitQuarters,
   measureDurationSeconds,
+  beatPattern,
+  beatIntervalMs,
+  tickMidi,
 } from '../../src/engine/rhythm'
 
 const ts44: TimeSignature = { numerator: 4, denominator: 4, label: '4/4', accentPattern: '强-弱-次强-弱' }
@@ -35,5 +38,35 @@ describe('rhythm 引擎', () => {
 
   it('4/4 @100bpm 一小节 2.4 秒', () => {
     expect(measureDurationSeconds(ts44, 100)).toBeCloseTo(2.4)
+  })
+
+  it('4/4 强弱规律 → 强 弱 次强 弱', () => {
+    expect(beatPattern(ts44)).toEqual(['strong', 'weak', 'medium', 'weak'])
+  })
+
+  it('6/8 强弱规律 → 每小节 6 拍，第 4 拍次强', () => {
+    const ts68: TimeSignature = {
+      numerator: 6,
+      denominator: 8,
+      label: '6/8',
+      accentPattern: '强-弱-弱-次强-弱-弱',
+    }
+    expect(beatPattern(ts68)).toEqual(['strong', 'weak', 'weak', 'medium', 'weak', 'weak'])
+  })
+
+  it('节拍间隔：4/4 @120 = 500ms，6/8 @120 = 250ms', () => {
+    expect(beatIntervalMs(ts44, 120)).toBeCloseTo(500)
+    const ts68: TimeSignature = {
+      numerator: 6,
+      denominator: 8,
+      label: '6/8',
+      accentPattern: '强-弱-弱-次强-弱-弱',
+    }
+    expect(beatIntervalMs(ts68, 120)).toBeCloseTo(250)
+  })
+
+  it('强弱拍提示音：强拍音高 > 次强 > 弱', () => {
+    expect(tickMidi('strong')).toBeGreaterThan(tickMidi('medium'))
+    expect(tickMidi('medium')).toBeGreaterThan(tickMidi('weak'))
   })
 })

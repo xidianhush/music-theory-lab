@@ -69,7 +69,7 @@ export default function Rhythm() {
           body: tsExercises.map((e) => <QuizCard key={e.id} exercise={e} />),
         },
       ]}
-      footer="下一步（M2）：节拍器真正打拍，强弱拍视觉高亮 + 实时对拍反馈。"
+      footer="已实现：节拍器打拍、强弱拍视觉高亮、速度与拍号调节、练习即时反馈。下一步：节奏跟打与实时对拍。"
     />
   )
 }
