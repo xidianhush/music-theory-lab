@@ -59,6 +59,12 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
       renderer.resize(width, height)
       const ctx = renderer.getContext()
 
+      // 先为每行谱表建 stave + 音符 + voice（不急着画）
+      const blocks: {
+        y: number
+        stave: InstanceType<typeof Stave>
+        voice: InstanceType<typeof Voice>
+      }[] = []
       for (const staffNum of staffs) {
         const isTreble = staffNum === 1
         const y = isTreble ? TREBLE_Y : BASS_Y
@@ -70,9 +76,6 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
             .addKeySignature(keyFromFifths(measure.fifths).root)
             .addTimeSignature(`${measure.beats}/${measure.beatType}`)
         }
-        // 谱号/调号/拍号字形用主文字色（在 stave.draw 前设 ctx 默认色）
-        ctx.setFillStyle(INK).setStrokeStyle(INK)
-        stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
 
         // 按发音点合并：和弦音（c=true）并入前一个音符的 keys，共享符干与时值
         const vexNotes: InstanceType<typeof StaveNote>[] = []
@@ -108,26 +111,42 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
           vexNotes.push(vn)
         }
 
-        if (vexNotes.length > 0) {
-          const voice = new Voice({
-            numBeats: measure.beats,
-            beatValue: measure.beatType,
-          })
-            .setMode(Voice.Mode.SOFT)
-            .addTickables(vexNotes)
-          new Formatter().joinVoices([voice]).formatToStave([voice], stave)
-          voice.draw(ctx, stave)
-        }
+        const voice = new Voice({
+          numBeats: measure.beats,
+          beatValue: measure.beatType,
+        })
+          .setMode(Voice.Mode.SOFT)
+          .addTickables(vexNotes)
+        blocks.push({ y, stave, voice })
+      }
+
+      // 谱号/调号/拍号字形用主文字色（draw 前设 ctx 默认色）
+      ctx.setFillStyle(INK).setStrokeStyle(INK)
+      for (const b of blocks) {
+        b.stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
+      }
+
+      // 双手共享一个 Formatter：按同一时间网格排布，同拍点音符垂直对齐（与纸质谱一致）
+      if (blocks.length > 0) {
+        const formatter = new Formatter().joinVoices(blocks.map((b) => b.voice))
+        formatter.formatToStave(
+          blocks.map((b) => b.voice),
+          blocks[0].stave,
+          { alignRests: false },
+        )
+        for (const b of blocks) b.voice.draw(ctx, b.stave)
 
         // 小节线（结束线）
-        const endX = stave.getX() + stave.getWidth()
-        ctx.save()
-        ctx.beginPath()
-        ctx.setLineWidth(1.2)
-        ctx.moveTo(endX, y - 30)
-        ctx.lineTo(endX, y + 42)
-        ctx.stroke()
-        ctx.restore()
+        for (const b of blocks) {
+          const endX = b.stave.getX() + b.stave.getWidth()
+          ctx.save()
+          ctx.beginPath()
+          ctx.setLineWidth(1.2)
+          ctx.moveTo(endX, b.y - 30)
+          ctx.lineTo(endX, b.y + 42)
+          ctx.stroke()
+          ctx.restore()
+        }
       }
     }
     void render()
