@@ -4,12 +4,14 @@
  * 用法：npx tsx scripts/import-piece.ts
  * 输出：src/data/pieces/luv-sic-pt3.json
  *
- * 校对依据（QA.md + 谱首字形目检）：
- *   页1 fifths=-3（♭B 大调，3 降号，裁图确认）
+ * 校对依据（QA.md + 250dpi 高清谱首字形 OCR 复核）：
+ *   页1 fifths=-4（♭A 大调，4 降号，250dpi 高清 OCR 四框 ♭ 复核定案；
+ *     早期 200dpi 目检"3♭"判定错误，Audiveris 原判 fifths=-4 正确）
  *   页2 fifths=-4（♭A 大调，4 降号，裁图确认）
  *   页3 fifths=-4（♭A 大调，4 降号，裁图确认）
  *   页4 fifths=-4（♭A 大调，4 降号，OCR 计数确认）
- *   页5 fifths=-3（♭E 大调，3 降号，裁图确认；♭B 为备选）
+ *   页5 fifths=-4（♭A 大调，4 降号，250dpi 高清 OCR 复核；
+ *     早期"3♭/♭E 大调"判定错误）
  */
 import { execSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
@@ -22,11 +24,11 @@ const SCORE_DIR = path.join(__dirname, '..', 'data', 'scores', 'luv-sic-pt3')
 const OUT = path.join(__dirname, '..', 'src', 'data', 'pieces', 'luv-sic-pt3.json')
 
 const CORRECTION: Record<number, { fifths: number; label: string; note: string }> = {
-  1: { fifths: -3, label: '♭B 大调', note: '起始调：3 个降号' },
-  2: { fifths: -4, label: '♭A 大调', note: '转调 ♭B→♭A：下行二度，4 个降号' },
+  1: { fifths: -4, label: '♭A 大调', note: '起始调：4 个降号' },
+  2: { fifths: -4, label: '♭A 大调', note: '延续 ♭A 大调' },
   3: { fifths: -4, label: '♭A 大调', note: '延续 ♭A 大调' },
   4: { fifths: -4, label: '♭A 大调', note: '延续 ♭A 大调' },
-  5: { fifths: -3, label: '♭E 大调', note: '转调 ♭A→♭E：下行四度，3 个降号' },
+  5: { fifths: -4, label: '♭A 大调', note: '延续 ♭A 大调（4 降号）' },
 }
 
 function readXml(page: number): string {

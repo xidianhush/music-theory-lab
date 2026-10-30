@@ -147,11 +147,11 @@ export default function PieceDetail() {
         {
           key: 'story',
           phase: '调',
-          title: '整曲转调故事',
+          title: '整曲调性：♭A 大调',
           body: (
             <>
               <p className="page__body">
-                这首曲子的调号在 3 个降号和 4 个降号之间切换——不是看错谱，是<b>转调</b>。跟着每一页的调号走一遍五度圈：
+                全曲五页调号一致，都是 <b>♭A 大调（4 个降号：B♭ · E♭ · A♭ · D♭）</b>——没有转调。跟着每一页谱首的调号确认一下：
               </p>
               <div className="piece-journey">
                 {piece.pages.map((p, i) => (
@@ -166,8 +166,8 @@ export default function PieceDetail() {
                 ))}
               </div>
               <p className="page__body" style={{ marginTop: 'var(--space-3)' }}>
-                主音参照：{piece.pages.map((p) => keyFromFifths(p.fifths).root).join(' → ')}。
-                每页谱首你会看到对应的调号变化——这就是"谱面如何用最少的临时记号讲最多的音乐"。
+                五页共用同一套调号（{piece.pages.map((p) => keyFromFifths(p.fifths).root).join(' → ')}），
+                说明这首曲子在调性上是统一的。谱面只在小节内用临时记号处理离调音，主调从头到尾是 ♭A。
               </p>
             </>
           ),

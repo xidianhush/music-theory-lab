@@ -126,12 +126,24 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
         b.stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
       }
 
-      // 双手共享一个 Formatter：按同一时间网格排布，同拍点音符垂直对齐（与纸质谱一致）
+      // 双手共享一个 Formatter：按同一时间网格排布，同拍点音符垂直对齐（与纸质谱一致）。
+      // 注意不能走 formatToStave：它会把所有 voice 强制挂到同一个 stave，同 tick 的
+      // 左右手音符会被 VexFlow 当作同一和弦做避让位移（约 30px），反而对不齐。
+      // 参照 VexFlow System.format 的做法：每个音符保留自己的 stave、
+      // 统一 noteStartX、formatter.format() 按 tick 对齐。
       if (blocks.length > 0) {
+        const startX = Math.max(...blocks.map((b) => b.stave.getNoteStartX()))
+        for (const b of blocks) {
+          b.stave.setNoteStartX(startX)
+          b.voice.setStave(b.stave)
+          b.voice.getTickables().forEach((t) => t.setStave(b.stave))
+        }
         const formatter = new Formatter().joinVoices(blocks.map((b) => b.voice))
-        formatter.formatToStave(
+        const justifyWidth =
+          blocks[0].stave.getWidth() - (startX - blocks[0].stave.getX()) - Stave.defaultPadding
+        formatter.format(
           blocks.map((b) => b.voice),
-          blocks[0].stave,
+          justifyWidth,
           { alignRests: false },
         )
         for (const b of blocks) b.voice.draw(ctx, b.stave)
