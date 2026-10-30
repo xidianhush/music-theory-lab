@@ -21,3 +21,13 @@ export function trebleStaffPosition(name: string): StaffPosition {
   const position = 7 * (octave - 4) + LETTER_INDEX[letter] - 2
   return { position, accidental: (accidental as '#' | 'b') || null }
 }
+
+/**
+ * 音名 → VexFlow 键格式（小写字母 + 临时记号 + /八度）：
+ * 'C4' → 'c/4'，'F#4' → 'f#/4'，'Bb4' → 'bb/4'
+ */
+export function toVexKey(name: string): string {
+  const match = name.match(/^([A-G])([#b]?)(-?\d+)$/)
+  if (!match) throw new Error(`无法解析音名: ${name}`)
+  return `${match[1].toLowerCase()}${match[2]}/${match[3]}`
+}

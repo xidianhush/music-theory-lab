@@ -7,7 +7,8 @@
 - 构建：Vite 8 + React 19 + TypeScript 5.9（纯 CSS，不用 Tailwind）
 - 路由：React Router v7
 - 测试：Vitest 5（引擎层纯函数单测）
-- 计划引入：VexFlow（谱面渲染，M2）、Web Audio API（已封装 AudioEngine，可直接用）
+- 谱面：VexFlow 5（已接入；StaffView 组件负责渲染 + 点击热区 + 音名标注）
+- 音频：Web Audio API（AudioEngine 单例封装）
 
 ## 目录结构
 
@@ -60,7 +61,7 @@ pages → components → engine → data
 | M0 | 工程骨架：目录、路由、设计令牌、四层占位 | 完成 |
 | M1 | 引擎与数据：rhythm/scale/notation 纯函数 + 单测，AudioEngine 发声 | 完成（题库待 M3 前扩展） |
 | M2 | 第一个闭环：节拍模块（节拍器打拍、强弱拍高亮、拍号练习答题反馈） | 完成 |
-| M3 | 复制范式：五线谱（VexFlow 谱面 + 点谱发声）、音阶（键盘高亮播放 + 听音辨调） | 待做 |
+| M3 | 复制范式：五线谱（VexFlow 谱面 + 点谱发声）、音阶（键盘高亮播放 + 听音辨调） | 部分完成（五线谱已闭环） |
 | 二期 | 音程、和弦、视唱练耳、移调与转调 | 待做 |
 
 ## 关键决策记录

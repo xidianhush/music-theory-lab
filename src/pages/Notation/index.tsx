@@ -1,9 +1,18 @@
+import { useState } from 'react'
 import PageShell from '../../components/ui/PageShell'
 import StaffView from '../../components/staff'
-import Piano from '../../components/piano'
-import { naturalNotes } from '../../data/notes'
+import NoteReadingDrill from '../../components/quiz/NoteReadingDrill'
+import { cMajorScaleOneOctave, noteByName } from '../../data/notes'
+
+const STAFF_POOL = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
 
 export default function Notation() {
+  const scale = cMajorScaleOneOctave(4)
+  const [hearTarget, setHearTarget] = useState(
+    () => STAFF_POOL[Math.floor(Math.random() * STAFF_POOL.length)],
+  )
+  const hearNote = noteByName(hearTarget)
+
   return (
     <PageShell
       title="五线谱基础"
@@ -23,47 +32,56 @@ export default function Notation() {
         {
           key: 'see',
           phase: '看',
-          title: '谱面与音名对照',
+          title: 'C 大调音阶在谱面上长什么样',
           body: (
             <>
-              <StaffView title="高音谱表（示意）" />
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>音名</th>
-                    <th>音级</th>
-                    <th>MIDI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {naturalNotes(4).map((n) => (
-                    <tr key={n.name}>
-                      <td>
-                        <code>{n.name}</code>
-                      </td>
-                      <td>{n.pitchClass}</td>
-                      <td>{n.midi}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <StaffView
+                title="高音谱表 · 4/4 · C 大调音阶（八分音符）"
+                notes={scale.map((n) => ({ name: n.name, midi: n.midi, duration: '8' }))}
+              />
+              <p style={{ marginTop: 'var(--space-4)' }}>
+                点击任意音符可以听音，音名标在音符下方。八分音符八个 = 一小节（4 拍）。
+              </p>
             </>
           ),
         },
         {
           key: 'hear',
           phase: '听',
-          title: '点键听音',
-          body: <Piano />,
+          title: '点谱听音',
+          body: (
+            <>
+              <StaffView
+                title={`随机单音（当前：${hearTarget}）`}
+                notes={[{ name: hearTarget, midi: hearNote.midi, duration: 'q' }]}
+                showLabels={false}
+                height={170}
+              />
+              <div style={{ marginTop: 'var(--space-4)' }}>
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() =>
+                    setHearTarget(STAFF_POOL[Math.floor(Math.random() * STAFF_POOL.length)])
+                  }
+                >
+                  换一个音
+                </button>
+                <span style={{ color: 'var(--text-faint)', fontSize: 'var(--text-sm)', marginLeft: 'var(--space-3)' }}>
+                  点击谱面上的音符发声，先听再认位置
+                </span>
+              </div>
+            </>
+          ),
         },
         {
           key: 'drill',
           phase: '练',
-          title: '读谱小练习',
-          body: <div className="placeholder">听音辨位 / 看谱唱名练习 · 待实现（M2）</div>,
+          title: '看谱选音名',
+          body: <NoteReadingDrill />,
         },
       ]}
-      footer="下一步（M2）：接入 VexFlow 渲染真实谱面，键盘点击发声。"
+      footer="已实现：VexFlow 真实谱面渲染、点谱发声、音名标注、读谱练习。下一步：节奏跟打 / 音阶键盘高亮。"
     />
   )
 }

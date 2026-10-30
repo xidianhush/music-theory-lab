@@ -57,3 +57,20 @@ export function naturalNotes(octave = 4): Note[] {
     midi: 60 + (octave - 4) * 12 + NATURAL_MIDI_OFFSET[letter],
   }))
 }
+
+/** 音名（如 'C4'、'F#4'、'Bb4'）→ Note（MIDI = 12*(八度+1) + 音级） */
+export function noteByName(name: string): Note {
+  const match = name.match(/^([A-G])([#b]?)(-?\d+)$/)
+  if (!match) throw new Error(`无法解析音名: ${name}`)
+  const letter = match[1] as PitchClass
+  const accidental = match[2] === '#' ? 1 : match[2] === 'b' ? -1 : 0
+  const octave = Number(match[3])
+  const pitchClass = ((PITCH_CLASS_INDEX[letter] + accidental) % 12 + 12) % 12
+  const midi = 12 * (octave + 1) + pitchClass
+  return { name, pitchClass, midi }
+}
+
+/** C 大调一个八度（上行 8 音，含八度主音） */
+export function cMajorScaleOneOctave(octave = 4): Note[] {
+  return [...naturalNotes(octave), noteByName(`C${octave + 1}`)]
+}
