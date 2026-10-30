@@ -19,6 +19,7 @@ export default function PieceDetail() {
   const [bpm, setBpm] = useState(95)
   const [sel, setSel] = useState<number | null>(null)
   const [playingN, setPlayingN] = useState<number | null>(null)
+  const [playingAll, setPlayingAll] = useState(false)
   const [loop, setLoop] = useState(true)
   const [activeMidi, setActiveMidi] = useState<number | null>(null)
 
@@ -49,7 +50,49 @@ export default function PieceDetail() {
     clearTimers()
     playingRef.current = null
     setPlayingN(null)
+    setPlayingAll(false)
     setActiveMidi(null)
+  }
+
+  /** 连续播放整曲（或从选中小节起）：各小节按绝对时间轴无缝衔接 */
+  const playAll = () => {
+    if (!piece) return
+    stop()
+    const t0 = audioEngine.getCurrentTime() ?? 0
+    const secPerQuarter = 60 / bpm
+    const startN = sel ?? 1
+    let accum = 0
+    let totalSec = 0
+    setPlayingAll(true)
+    playingRef.current = -1
+    for (const m of piece.measures) {
+      if (m.n < startN) continue
+      const sm = pieceMeasureToScoreMeasure(m)
+      const onsets = measureOnsets(sm, piece.divisions)
+      const ms = measureSeconds(sm, bpm)
+      onsets.forEach((o, i) => {
+        const when = t0 + accum + o.quarterPos * secPerQuarter
+        const nextPos = onsets[i + 1]?.quarterPos ?? ms / secPerQuarter
+        const dur = Math.max(0.09, (nextPos - o.quarterPos) * secPerQuarter * 0.92)
+        for (const midi of o.midis) {
+          audioEngine.scheduleTone(AudioEngine.midiToFrequency(midi), when, dur, 0.13)
+          timers.current.push(
+            window.setTimeout(() => setActiveMidi(midi), Math.max(0, (when - t0) * 1000 - 30)),
+          )
+        }
+      })
+      // 小节开始时刻切换谱面高亮
+      timers.current.push(
+        window.setTimeout(() => setPlayingN(m.n), Math.max(0, accum * 1000 - 40)),
+      )
+      accum += ms
+      totalSec = accum
+    }
+    timers.current.push(
+      window.setTimeout(() => {
+        stop()
+      }, totalSec * 1000 + 150),
+    )
   }
 
   const playMeasure = (n: number) => {
@@ -216,6 +259,9 @@ export default function PieceDetail() {
                 </code>
               </div>
               <div className="metro__row" style={{ marginTop: 'var(--space-3)' }}>
+                <button type="button" className="btn btn--primary" onClick={playingAll ? stop : playAll}>
+                  {playingAll ? '⏹ 停止整曲' : '▶ 连续播放整曲'}
+                </button>
                 <button type="button" className="btn btn--ghost" onClick={stop}>
                   停止
                 </button>
@@ -223,7 +269,7 @@ export default function PieceDetail() {
                   <input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} />
                   循环当前小节
                 </label>
-                <span className="metro__hint">播放中的小节高亮；再点一下即可停止。</span>
+                <span className="metro__hint">点小节单播并高亮；连续播放从选中小节（默认第 1 小节）一路播到结尾。</span>
               </div>
 
               {piece.pages.map((p) => (
