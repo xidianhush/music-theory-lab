@@ -4,6 +4,11 @@ import { keyFromFifths, vexKeyOf } from '../../engine/score'
 
 export type Hand = 'both' | 'right' | 'left'
 
+/** 深色主题下的谱面墨色：音符/符号用主文字色，谱线稍暗一档 */
+const INK = '#e8eefc'
+const LINE = '#b7c5e6'
+
+/** 附点必须编码进 duration（'qd'），VexFlow 才按时值 tick 排布；构造器 dots 只画点不改 tick */
 const DURATION_VEX: Record<string, string> = {
   whole: 'w',
   half: 'h',
@@ -13,9 +18,10 @@ const DURATION_VEX: Record<string, string> = {
   '32nd': '32',
 }
 
-/** 深色主题下的谱面墨色：音符/符号用主文字色，谱线稍暗一档 */
-const INK = '#e8eefc'
-const LINE = '#b7c5e6'
+function vexDuration(type: string, dots: number, isRest: boolean): string {
+  const base = DURATION_VEX[type] ?? 'q'
+  return `${base}${isRest ? 'r' : ''}${'d'.repeat(dots)}`
+}
 
 interface PieceStaffProps {
   measure: PieceMeasure
@@ -68,21 +74,39 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
         ctx.setFillStyle(INK).setStrokeStyle(INK)
         stave.setStyle({ strokeStyle: LINE }).setContext(ctx).draw()
 
-        const vexNotes = measure.notes
-          .filter((n) => n.st === staffNum)
-          .map((n) => {
-            const dur = DURATION_VEX[n.t] ?? 'q'
-            const vn = !n.p
-              ? new StaveNote({ keys: ['b/4'], duration: `${dur}r`, clef, dots: n.dot })
-              : new StaveNote({
-                  keys: [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })],
-                  duration: dur,
-                  clef,
-                  dots: n.dot,
-                })
-            vn.setStyle({ fillStyle: INK, strokeStyle: INK })
-            return vn
+        // 按发音点合并：和弦音（c=true）并入前一个音符的 keys，共享符干与时值
+        const vexNotes: InstanceType<typeof StaveNote>[] = []
+        let curKeys: string[] = []
+        let curDur = 'q'
+        let curRest = false
+        for (const n of measure.notes.filter((x) => x.st === staffNum)) {
+          const dur = vexDuration(n.t, n.dot, !n.p)
+          if (!n.c) {
+            if (curKeys.length > 0) {
+              const vn = new StaveNote({
+                keys: curRest ? ['b/4'] : curKeys,
+                duration: curDur,
+                clef,
+              })
+              vn.setStyle({ fillStyle: INK, strokeStyle: INK })
+              vexNotes.push(vn)
+            }
+            curKeys = n.p ? [vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a })] : []
+            curDur = dur
+            curRest = !n.p
+          } else if (n.p) {
+            curKeys.push(vexKeyOf({ step: n.p.s, octave: n.p.o, alter: n.p.a }))
+          }
+        }
+        if (curKeys.length > 0) {
+          const vn = new StaveNote({
+            keys: curRest ? ['b/4'] : curKeys,
+            duration: curDur,
+            clef,
           })
+          vn.setStyle({ fillStyle: INK, strokeStyle: INK })
+          vexNotes.push(vn)
+        }
 
         if (vexNotes.length > 0) {
           const voice = new Voice({
