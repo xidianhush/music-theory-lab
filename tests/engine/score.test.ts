@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { parseMusicXml, noteToMidi, vexKeyOf, quarterLength, measureSeconds } from '../../src/engine/score'
+import { parseMusicXml, noteToMidi, vexKeyOf, quarterLength, measureSeconds, keyFromFifths, measureOnsets } from '../../src/engine/score'
 
 const readFixture = (name: string) =>
   readFileSync(join(__dirname, '..', 'fixtures', name), 'utf-8')
@@ -161,5 +161,47 @@ describe('score 引擎（换算）', () => {
   it('measureSeconds：4/4 @120 = 2s，3/8 @120 = 0.75s', () => {
     expect(measureSeconds({ number: 1, fifths: 0, beats: 4, beatType: 4, notes: [] }, 120)).toBeCloseTo(2)
     expect(measureSeconds({ number: 1, fifths: 0, beats: 3, beatType: 8, notes: [] }, 120)).toBeCloseTo(0.75)
+  })
+})
+
+describe('score 引擎（调号与发音点）', () => {
+  it('keyFromFifths：0 → C，-3 → ♭E，-4 → ♭A，3 → A', () => {
+    expect(keyFromFifths(0).label).toBe('C 大调')
+    expect(keyFromFifths(-3)).toMatchObject({ root: 'Eb', label: '♭E 大调', sharpsFlats: -3 })
+    expect(keyFromFifths(-4)).toMatchObject({ root: 'Ab', label: '♭A 大调' })
+    expect(keyFromFifths(3)).toMatchObject({ root: 'A', label: 'A 大调' })
+  })
+
+  it('measureOnsets：和弦共享发音点，连音延续不重复触发', () => {
+    const n = (p: { s: string; o: number; a?: number } | null, extra: Partial<Record<string, unknown>> = {}) => ({
+      pitch: p ? { step: p.s as never, octave: p.o, alter: p.a ?? 0 } : null,
+      duration: (extra.d as number) ?? 4,
+      type: (extra.t as string) ?? 'quarter',
+      dots: (extra.dot as number) ?? 0,
+      voice: (extra.v as number) ?? 1,
+      staff: (extra.st as number) ?? 1,
+      chord: (extra.c as boolean) ?? false,
+      tieStart: (extra.ts as boolean) ?? false,
+      tieStop: (extra.tp as boolean) ?? false,
+    })
+    const measure = {
+      number: 1,
+      fifths: -3,
+      beats: 4,
+      beatType: 4,
+      notes: [
+        n({ s: 'C', o: 4 }),                      // 0.0 C4
+        n({ s: 'E', o: 4 }, { c: true }),         // 0.0 E4（和弦）
+        n({ s: 'G', o: 4 }, { c: true }),         // 0.0 G4（和弦）
+        n({ s: 'D', o: 4 }, { d: 4 }),            // 1.0 D4
+        n({ s: 'D', o: 4 }, { d: 4, tp: true }),  // 2.0 连音延续 D4 → 不触发
+      ],
+    }
+    const onsets = measureOnsets(measure, 4)
+    expect(onsets).toEqual([
+      { quarterPos: 0, midis: [60, 64, 67] },
+      { quarterPos: 1, midis: [62] },
+      // 连音延续音（tp）不产生新发音点，时值自然延伸
+    ])
   })
 })

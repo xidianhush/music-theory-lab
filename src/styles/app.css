@@ -629,3 +629,198 @@ a.card:hover {
   font-size: var(--text-sm);
   color: var(--text-dim);
 }
+
+/* ================= M4 曲目库 / 曲目跟弹 ================= */
+
+.piece-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.piece-card {
+  display: block;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.piece-card:hover {
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+}
+
+.piece-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.piece-card__title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.piece-card__tag {
+  font-size: var(--text-xs);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.piece-card__meta {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.piece-card__desc {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.piece-card__cta {
+  margin-top: var(--space-3);
+  color: var(--accent-strong);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* 转调故事时间线 */
+.piece-journey {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.piece-journey__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  min-width: 150px;
+}
+
+.piece-journey__badge {
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.piece-journey__meta {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.piece-journey__note {
+  font-size: var(--text-sm);
+  color: var(--text-soft);
+}
+
+.piece-journey__arrow {
+  align-self: center;
+  color: var(--text-dim);
+  font-size: var(--text-lg);
+  margin-top: var(--space-4);
+}
+
+/* 谱面区 */
+.piece-page {
+  margin-top: var(--space-5);
+}
+
+.piece-page__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.piece-page__tag {
+  font-weight: 700;
+}
+
+.piece-page__key {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.piece-page__note {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.piece-page__measures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.piece-measure {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.piece-measure svg {
+  display: block;
+}
+
+.piece-measure--active {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+/* 小节分析面板 */
+.piece-panel {
+  margin-top: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.piece-panel h3 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-md);
+}
+
+.piece-panel__rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.piece-panel__rows > div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.piece-panel__hint {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.piece-range {
+  accent-color: var(--accent);
+  min-width: 180px;
+}

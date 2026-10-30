@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/notation', label: '五线谱' },
   { to: '/rhythm', label: '节拍与节奏' },
   { to: '/scales', label: '调式与音阶' },
+  { to: '/pieces', label: '曲目库' },
 ]
 
 export default function App() {

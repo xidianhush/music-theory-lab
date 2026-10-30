@@ -6,7 +6,17 @@ import type { Score, ScoreMeasure, ScoreNote, ScorePitch, Step } from './types'
  * 纯函数，无副作用；解析与换算全部可单测。
  */
 
-export { noteToMidi, vexKeyOf, quarterLength, measureSeconds } from './convert'
+export {
+  noteToMidi,
+  vexKeyOf,
+  quarterLength,
+  measureSeconds,
+  keyFromFifths,
+  measureOnsets,
+  pieceNoteToScoreNote,
+  pieceMeasureToScoreMeasure,
+} from './convert'
+export type { MeasureOnset } from './convert'
 export type { Score, ScoreMeasure, ScoreNote, ScorePitch, Step } from './types'
 
 const STEP_SET: Record<string, Step> = {

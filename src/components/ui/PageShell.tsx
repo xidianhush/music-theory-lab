@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type Phase = '讲' | '看' | '听' | '练'
+export type Phase = '讲' | '看' | '听' | '练' | '调' | '弹' | '库' | '…' | '!'
 
 export interface Section {
   key: string

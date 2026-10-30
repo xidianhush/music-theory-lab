@@ -73,6 +73,23 @@ export class AudioEngine {
   playMidi(midi: number, duration?: number): void {
     this.playFrequency(AudioEngine.midiToFrequency(midi), duration)
   }
+
+  /** 在指定时间播放一段持续音（曲目播放用；triangle 比节拍器的 square 更接近乐器音色） */
+  scheduleTone(freq: number, when: number, duration = 0.3, volume = 0.14): void {
+    const ctx = this.ensureContext()
+    if (!ctx) return
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.value = freq
+    gain.gain.setValueAtTime(0.0001, when)
+    gain.gain.exponentialRampToValueAtTime(volume, when + 0.015)
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + duration)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(when)
+    osc.stop(when + duration + 0.05)
+  }
 }
 
 /** 全局单例：全站共用同一个 AudioContext */

@@ -19,6 +19,12 @@ const MODULES = [
     title: '调式与音阶',
     desc: '大调 / 小调、调号与五度圈：C 大调、A 大调、♭B 大调…',
   },
+  {
+    to: '/pieces',
+    tag: '真实谱例',
+    title: '曲目库 · 跟弹',
+    desc: '导入真实钢琴谱（Luv(sic.)pt3）：整曲转调故事、点小节跟弹、键盘高亮。',
+  },
 ]
 
 export default function Home() {
@@ -43,9 +49,12 @@ export default function Home() {
         <h2>项目路线图</h2>
         <div className="page__body">
           <p>
-            M0 工程骨架 → M1 引擎与数据 → M2 节拍闭环 → M3 五线谱 / 音阶 / 节奏跟打（当前已全部完成）。
+            M0 工程骨架 → M1 引擎与数据 → M2 节拍闭环 → M3 五线谱 / 音阶 / 节奏跟打 →{' '}
+            <b>M4 真实乐谱导入（当前：曲目库与跟弹已上线）</b>。
           </p>
-          <p>进阶内容（音程、和弦、视唱练耳）规划在二期，模块化结构下可直接追加。</p>
+          <p>
+            M4 路线：PDF → Audiveris（OMR 识别）→ MusicXML → 人工校对调号 → 引擎解析入库 → 曲目页跟弹。进阶内容（音程、和弦、视唱练耳）规划在二期。
+          </p>
         </div>
       </section>
     </div>
