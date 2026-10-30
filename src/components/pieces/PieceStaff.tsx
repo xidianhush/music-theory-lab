@@ -45,7 +45,10 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
   const ref = useRef<HTMLDivElement>(null)
   const staffs = hand === 'both' ? [1, 2] : hand === 'right' ? [1] : [2]
   const height = staffs.length === 1 ? H_SINGLE : H_BOTH
-  const width = Math.min(380, Math.max(160, measure.notes.length * 7 + 120))
+  // 块宽 = 音符排版宽 + 右侧留白；showPrefix 需额外容纳谱号/调号/拍号
+  // （4 降号调号约 170px + 拍号 60px + 谱号 40px，若不足会把音符挤出块外）
+  const prefixExtra = showPrefix ? 270 : 0
+  const width = Math.min(640, Math.max(160, measure.notes.length * 7 + 120 + prefixExtra))
 
   useEffect(() => {
     const el = ref.current
@@ -183,6 +186,8 @@ export default function PieceStaff({ measure, showPrefix, hand, active, onSelect
           onSelect(measure.n)
         }
       }}
-    />
+    >
+      <span className="piece-measure__no">第 {measure.n} 小节</span>
+    </div>
   )
 }

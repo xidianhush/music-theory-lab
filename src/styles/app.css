@@ -777,11 +777,27 @@ a.card:hover {
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .piece-measure svg {
   display: block;
+}
+
+.piece-measure__no {
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  z-index: 1;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--text-faint);
+  background: rgba(11, 18, 32, 0.72);
+  border-radius: 4px;
+  padding: 1px 5px;
+  pointer-events: none;
+  user-select: none;
 }
 
 .piece-measure--active {
