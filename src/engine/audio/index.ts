@@ -16,6 +16,38 @@ function getAudioContextClass(): AudioCtor | null {
 export class AudioEngine {
   private ctx: AudioContext | null = null
 
+  /** 已创建且未结束的发声源（oscillator），stopAll 时统一静音 */
+  private activeOscs = new Set<OscillatorNode>()
+  private oscGains = new Map<OscillatorNode, GainNode>()
+
+  /** 登记发声源：播放结束（onended）自动移除；stopAll 可随时中断 */
+  private trackSource(osc: OscillatorNode, gain: GainNode): void {
+    this.activeOscs.add(osc)
+    this.oscGains.set(osc, gain)
+    osc.onended = () => {
+      this.activeOscs.delete(osc)
+      this.oscGains.delete(osc)
+      try { osc.disconnect() } catch { /* 已断开则忽略 */ }
+      try { gain.disconnect() } catch { /* 已断开则忽略 */ }
+    }
+  }
+
+  /**
+   * 立即静音所有已排定/进行中的声音（含未来时间点的音符调度）。
+   * WebAudio 的 osc.start(when) 一旦排入时间轴，clearTimeout 无法取消，
+   * 必须对 source 逐个 stop() 并断开，否则"停止"后音符仍会按时响起。
+   */
+  stopAll(): void {
+    for (const osc of [...this.activeOscs]) {
+      try { osc.stop() } catch { /* 已结束/已停止则忽略 */ }
+      try { osc.disconnect() } catch { /* 已断开则忽略 */ }
+      const gain = this.oscGains.get(osc)
+      try { gain?.disconnect() } catch { /* 已断开则忽略 */ }
+    }
+    this.activeOscs.clear()
+    this.oscGains.clear()
+  }
+
   private ensureContext(): AudioContext | null {
     const Ctor = getAudioContextClass()
     if (!Ctor) return null
@@ -47,6 +79,7 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, when + duration)
     osc.connect(gain)
     gain.connect(ctx.destination)
+    this.trackSource(osc, gain)
     osc.start(when)
     osc.stop(when + duration + 0.02)
   }
@@ -65,6 +98,7 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
     osc.connect(gain)
     gain.connect(ctx.destination)
+    this.trackSource(osc, gain)
     osc.start(now)
     osc.stop(now + duration + 0.05)
   }
@@ -87,6 +121,7 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, when + duration)
     osc.connect(gain)
     gain.connect(ctx.destination)
+    this.trackSource(osc, gain)
     osc.start(when)
     osc.stop(when + duration + 0.05)
   }

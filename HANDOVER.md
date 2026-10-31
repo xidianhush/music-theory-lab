@@ -79,6 +79,7 @@ docs/architecture.md             架构文档（注意：其中"1907 音符"为�
 ### 播放引擎（不可回归）
 - `scheduleTone(freq, when)`：`when` 是 AudioContext **绝对时间**（供节拍器等外部调度用）。
 - `scheduleToneDelay(freq, delay)`：调用时刻采样 `ctx.currentTime + delay` —— **曲目播放必须用它**，与 UI setTimeout 高亮共用同一时间原点（否则首次 resume 时 currentTime 冻结，声音整体提前/高亮滞后，`023e672` 已修）。
+- **停止必须调用 `audioEngine.stopAll()`**：WebAudio 的 `osc.start(when)` 一旦排入时间轴，仅 clearTimeout 无法取消——整曲播放会把全部音符立即排定（实测 1700+ 发声源），不 stopAll 就会出现"停止后仍持续发声"（2026-10-31 修复，勿回退）。
 - 高亮定时器统一 `delay*1000 - 30`（音符）与 `accum*1000 - 40`（小节切换），与声音 delay 同源。
 
 ## 5. 标准工作流（下一位智能体日常执行）

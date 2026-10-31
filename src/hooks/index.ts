@@ -47,6 +47,7 @@ export function useMetronome() {
       timerRef.current = null
     }
     runningRef.current = false
+    audioEngine.stopAll() // 取消已排入时间轴的 lookahead 节拍音，停止即静音
   }, [])
 
   const start = useCallback(

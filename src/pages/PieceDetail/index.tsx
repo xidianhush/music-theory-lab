@@ -48,6 +48,7 @@ export default function PieceDetail() {
 
   const stop = () => {
     clearTimers()
+    audioEngine.stopAll() // 取消 WebAudio 时间轴上已排定的音符（否则停止后声音继续）
     playingRef.current = null
     setPlayingN(null)
     setPlayingAll(false)
