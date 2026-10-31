@@ -7,6 +7,10 @@ import type { ScaleDef } from '../../data/scales'
 import { scaleNoteNames, scaleMidi, MAJOR_STEPS, NATURAL_MINOR_STEPS } from '../../engine/scale'
 import { useSequencedPlayer } from '../../hooks'
 
+/** 大调 / 自然小调分组，按钮两排展示 */
+const MAJOR_SCALES = SCALES.filter((s) => s.quality === 'major')
+const MINOR_SCALES = SCALES.filter((s) => s.quality === 'naturalMinor')
+
 export default function Scales() {
   const [scale, setScale] = useState<ScaleDef>(SCALES[0])
   const { play, stop, currentIndex } = useSequencedPlayer()
@@ -78,9 +82,24 @@ export default function Scales() {
           body: (
             <>
               <div className="metro__row">
-                <span className="metro__label">调式</span>
+                <span className="metro__label">大调</span>
                 <div className="metro__sig-group">
-                  {SCALES.map((s) => (
+                  {MAJOR_SCALES.map((s) => (
+                    <button
+                      key={`${s.key}-${s.quality}`}
+                      type="button"
+                      className={`btn btn--ghost metro__sig ${s.label === scale.label ? 'metro__sig--active' : ''}`}
+                      onClick={() => selectScale(s)}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="metro__row" style={{ marginTop: 'var(--space-2)' }}>
+                <span className="metro__label">小调</span>
+                <div className="metro__sig-group">
+                  {MINOR_SCALES.map((s) => (
                     <button
                       key={`${s.key}-${s.quality}`}
                       type="button"

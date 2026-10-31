@@ -32,6 +32,22 @@ describe('scale 引擎', () => {
     expect(scaleNoteNames('A', 'naturalMinor')).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G'])
   })
 
+  it('♭A 大调：四个降号 Bb Eb Ab Db', () => {
+    expect(scaleNoteNames('Ab', 'major')).toEqual(['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'])
+  })
+
+  it('♭D 大调：五个降号，拼写为 Db Eb 而非 C# D#', () => {
+    expect(scaleNoteNames('Db', 'major')).toEqual(['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'])
+  })
+
+  it('♯F 大调：六个升号，含 E#', () => {
+    expect(scaleNoteNames('F#', 'major')).toEqual(['F#', 'G#', 'A#', 'B', 'C#', 'D#', 'E#'])
+  })
+
+  it('f 自然小调 = ♭A 大调的关系小调（四个降号）', () => {
+    expect(scaleNoteNames('F', 'naturalMinor')).toEqual(['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'])
+  })
+
   it('音级编号首尾同音、共 8 个', () => {
     const pcs = scalePitchClasses(9, 'major')
     expect(pcs).toHaveLength(8)
