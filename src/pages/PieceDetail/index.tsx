@@ -9,6 +9,7 @@ import type { Piece } from '../../data/pieces'
 import { AudioEngine, audioEngine } from '../../engine/audio'
 import { keyFromFifths, measureSeconds, measureOnsets, pieceMeasureToScoreMeasure } from '../../engine/score'
 import { scaleMidi } from '../../engine/scale'
+import { analyzePieceHarmony } from '../../engine/harmony'
 
 export default function PieceDetail() {
   const { id } = useParams()
@@ -22,6 +23,9 @@ export default function PieceDetail() {
   const [playingAll, setPlayingAll] = useState(false)
   const [loop, setLoop] = useState(true)
   const [activeMidi, setActiveMidi] = useState<number | null>(null)
+  const [activeProg, setActiveProg] = useState<number | null>(null)
+
+  const harmony = useMemo(() => (piece ? analyzePieceHarmony(piece) : null), [piece])
 
   const timers = useRef<number[]>([])
   const loopRef = useRef(loop)
@@ -212,6 +216,68 @@ export default function PieceDetail() {
                 五页共用同一套调号（{piece.pages.map((p) => keyFromFifths(p.fifths).root).join(' → ')}），
                 说明这首曲子在调性上是统一的。谱面只在小节内用临时记号处理离调音，主调从头到尾是 ♭A。
               </p>
+            </>
+          ),
+        },
+        {
+          key: 'harmony',
+          phase: '析',
+          title: '自动识别：调式与和弦进行',
+          body: (
+            <>
+              <p className="page__body">
+                用规则引擎按小节自动识别：先由调号定调式，再取每小节拍点 0 的音集（已按调号校正临时记号），
+                与「调内 7 级 × 常见三/七和弦」模板匹配得分。识别结论仅供参考——真实演奏常含转位、经过音与非和声音。
+              </p>
+              <div className="metro__row" style={{ marginTop: 'var(--space-2)' }}>
+                <span className="metro__label">识别调式</span>
+                <code className="metro__hint" style={{ fontSize: 'var(--text-md)' }}>
+                  {harmony?.key.label ?? '…'}
+                </code>
+                <span className="piece-panel__hint">
+                  {harmony
+                    ? `识别出和弦的小节 ${harmony.measures.filter((m) => m.chord).length}/${harmony.measures.length}`
+                    : '加载中'}
+                </span>
+              </div>
+
+              {harmony && (
+                <>
+                  <div className="prog-strip" style={{ marginTop: 'var(--space-3)' }}>
+                    {harmony.progression.map((seg, i) => (
+                      <button
+                        key={`${seg.measures[0]}-${i}`}
+                        type="button"
+                        className={`chord-chip ${activeProg === i ? 'chord-chip--active' : ''}`}
+                        onClick={() => {
+                          setActiveProg(i)
+                          seg.pcs.forEach((pc) => audioEngine.playMidi(60 + pc, 0.9))
+                        }}
+                        aria-label={`小节 ${seg.measures.join('-')} ${seg.roman}`}
+                      >
+                        <span className="chord-chip__roman">{seg.roman}</span>
+                        <span className="chord-chip__name">{seg.name}</span>
+                        <span className="chord-chip__notes">
+                          {seg.measures.length === 1 ? `小节 ${seg.measures[0]}` : `小节 ${seg.measures[0]}–${seg.measures[seg.measures.length - 1]}`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="piece-panel__hint" style={{ marginTop: 'var(--space-2)' }}>
+                    点击任一段可试听该和弦；未识别的小节（{harmony.measures.filter((m) => !m.chord).map((m) => m.measure).join('、') || '无'}）多为发音点音过少或休止。
+                  </p>
+                  <div style={{ marginTop: 'var(--space-3)' }}>
+                    <Piano
+                      highlighted={
+                        activeProg !== null && harmony.progression[activeProg]
+                          ? harmony.progression[activeProg].pcs.map((pc) => 60 + pc)
+                          : harmony.progression[0]?.pcs.map((pc) => 60 + pc) ?? []
+                      }
+                      active={null}
+                    />
+                  </div>
+                </>
+              )}
             </>
           ),
         },
