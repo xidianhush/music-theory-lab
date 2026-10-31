@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Notation from './pages/Notation'
 import Rhythm from './pages/Rhythm'
 import Scales from './pages/Scales'
+import Chords from './pages/Chords'
 import Pieces from './pages/Pieces'
 import PieceDetail from './pages/PieceDetail'
 
@@ -17,6 +18,7 @@ const router = createHashRouter([
       { path: 'notation', element: <Notation /> },
       { path: 'rhythm', element: <Rhythm /> },
       { path: 'scales', element: <Scales /> },
+      { path: 'chords', element: <Chords /> },
       { path: 'pieces', element: <Pieces /> },
       { path: 'pieces/:id', element: <PieceDetail /> },
     ],
