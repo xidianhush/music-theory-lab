@@ -54,11 +54,10 @@ export default function PieceDetail() {
     setActiveMidi(null)
   }
 
-  /** 连续播放整曲（或从选中小节起）：各小节按绝对时间轴无缝衔接 */
+  /** 连续播放整曲（或从选中小节起）：各小节按相对延迟无缝衔接 */
   const playAll = () => {
     if (!piece) return
     stop()
-    const t0 = audioEngine.getCurrentTime() ?? 0
     const secPerQuarter = 60 / bpm
     const startN = sel ?? 1
     let accum = 0
@@ -71,13 +70,14 @@ export default function PieceDetail() {
       const onsets = measureOnsets(sm, piece.divisions)
       const ms = measureSeconds(sm, bpm)
       onsets.forEach((o, i) => {
-        const when = t0 + accum + o.quarterPos * secPerQuarter
+        // 相对延迟：与下方 setTimeout 高亮同一时间原点（调用时刻），声画同步
+        const delay = accum + o.quarterPos * secPerQuarter
         const nextPos = onsets[i + 1]?.quarterPos ?? ms / secPerQuarter
         const dur = Math.max(0.09, (nextPos - o.quarterPos) * secPerQuarter * 0.92)
         for (const midi of o.midis) {
-          audioEngine.scheduleTone(AudioEngine.midiToFrequency(midi), when, dur, 0.13)
+          audioEngine.scheduleToneDelay(AudioEngine.midiToFrequency(midi), delay, dur, 0.13)
           timers.current.push(
-            window.setTimeout(() => setActiveMidi(midi), Math.max(0, (when - t0) * 1000 - 30)),
+            window.setTimeout(() => setActiveMidi(midi), Math.max(0, delay * 1000 - 30)),
           )
         }
       })
@@ -103,17 +103,16 @@ export default function PieceDetail() {
     const sm = pieceMeasureToScoreMeasure(measure)
     const onsets = measureOnsets(sm, piece.divisions)
     const secPerQuarter = 60 / bpm
-    const t0 = audioEngine.getCurrentTime() ?? 0
     playingRef.current = n
     setPlayingN(n)
     const total = measureSeconds(sm, bpm)
     onsets.forEach((o, i) => {
-      const when = t0 + o.quarterPos * secPerQuarter
+      const delay = o.quarterPos * secPerQuarter
       const nextPos = onsets[i + 1]?.quarterPos ?? total / secPerQuarter
       const dur = Math.max(0.09, (nextPos - o.quarterPos) * secPerQuarter * 0.92)
       for (const midi of o.midis) {
-        audioEngine.scheduleTone(AudioEngine.midiToFrequency(midi), when, dur, 0.13)
-        timers.current.push(window.setTimeout(() => setActiveMidi(midi), Math.max(0, (when - t0) * 1000 - 30)))
+        audioEngine.scheduleToneDelay(AudioEngine.midiToFrequency(midi), delay, dur, 0.13)
+        timers.current.push(window.setTimeout(() => setActiveMidi(midi), Math.max(0, delay * 1000 - 30)))
       }
     })
     const totalMs = total * 1000

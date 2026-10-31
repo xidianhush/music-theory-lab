@@ -90,6 +90,18 @@ export class AudioEngine {
     osc.start(when)
     osc.stop(when + duration + 0.05)
   }
+
+  /**
+   * 按相对延迟播放（曲目跟弹/连续播放用）。
+   * 在调用时刻采样 ctx.currentTime 作为基准，与 UI setTimeout 高亮使用同一时间原点，
+   * 避免 AudioContext 从 suspended 恢复时 currentTime 冻结导致的声音整体提前/高亮滞后。
+   */
+  scheduleToneDelay(freq: number, delay: number, duration = 0.3, volume = 0.14): void {
+    const ctx = this.ensureContext()
+    if (!ctx) return
+    const when = ctx.currentTime + delay
+    this.scheduleTone(freq, when, duration, volume)
+  }
 }
 
 /** 全局单例：全站共用同一个 AudioContext */
