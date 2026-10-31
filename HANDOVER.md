@@ -2,7 +2,7 @@
 
 > 用途：移交给下一位编程智能体（或后续会话）的标准交接文件。
 > 打开本仓库后请**先读本文件**，再读 `docs/architecture.md` 与 `data/scores/luv-sic-pt3/QA.md`。
-> 最后更新：2026-10-31（由上一任智能体撰写；git HEAD = `023e672`）。
+> 最后更新：2026-10-31（由上一任智能体撰写；git HEAD = `a994dce`）。
 
 ---
 
@@ -18,10 +18,14 @@
 
 - **M0–M3 完成**：工程骨架、节拍节奏、五线谱（VexFlow）、调式音阶、跟打测验，均已部署。
 - **M4 主线完成（闭环）**：真实乐谱导入 = PDF → Audiveris 5.11 OMR（MusicXML）→ `scripts/import-piece.ts` 解析入库 → 独立分包 JSON → 曲目详情页跟弹。首曲 **luv(sic)pt3 全量 5 页入库：80 小节 / 1900 音符 / 全曲 ♭A 大调（fifths=-4）**。
-- **最近 8 次提交**（Conventional Commits，中文 message）：
+- **用户三点改进（本轮完成）**：① 调式音阶补全为 12 大调 + 12 关系自然小调（含 ♭A 大调）；② 新增「和弦进行」板块（和弦引擎 + 常用进行库 + 调式选择 → 和弦家族表 → 进行序列 → 钢琴键盘高亮播放，路由 `/chords`）；③ 曲目调式与和弦进行自动识别（`src/engine/harmony`，调号校正 + 模板匹配，PieceDetail 新增「析」教学区块标注识别结果）。
+- **最近 11 次提交**（Conventional Commits，中文 message）：
 
 | 提交 | 内容 |
 |---|---|
+| `a994dce` | 曲目调式与和弦进行自动识别并标注教学区块（harmony 引擎，77/80 小节识别） |
+| `720bce2` | 新增和弦进行板块（引擎/数据/页面/路由 `/chords`） |
+| `1edbcae` | 补全常用调式音阶（12 大调 + 12 自然小调，含 ♭A 大调） |
 | `023e672` | 声画同步：声音与高亮共用调用时刻为原点的相对延迟调度（新增 `AudioEngine.scheduleToneDelay`） |
 | `0e481b7` | 连续播放整曲按钮（`playingAll`/`playAll`，绝对时间轴无缝衔接） |
 | `4991b7b` | `measureOnsets` 按声部独立累积位置，左右手同拍发音合并（修听感错位） |
@@ -31,7 +35,7 @@
 | `3fe6265` | 双手谱表共享 Formatter，同拍音符垂直对齐 |
 | `8bfc262` | 谱面渲染按发音点合并和弦、附点改 duration 后缀 |
 
-- **测试基线**：`npm test` = **55/55 通过**（5 个文件：`tests/engine/{notation,notes,rhythm,scale,score}.test.ts`）。
+- **测试基线**：`npm test` = **86/86 通过**（8 个文件：`tests/engine/{notation,notes,rhythm,scale,score,chords,harmony,audio}.test.ts`）。
 - **构建**：`npm run build` ✓（base=`/music-theory-lab/`）。
 
 ## 3. 架构与关键文件地图
@@ -40,11 +44,17 @@
 
 ```
 src/
-├── pages/PieceDetail/index.tsx  曲目详情页：播放控制（单小节/整曲）、调性文案、谱面挂载
+├── pages/PieceDetail/index.tsx  曲目详情页：播放控制（单小节/整曲）、调性文案、谱面挂载、自动识别「析」区块
+├── pages/Chords/index.tsx       和弦进行板块：调式选择 → 和弦家族表 → 进行序列 → 钢琴高亮播放
 ├── components/pieces/PieceStaff.tsx  VexFlow 谱面渲染（块宽、连音线、附点、跨谱表对齐）
 ├── components/piano/            键盘高亮
 ├── engine/audio/index.ts        AudioEngine 单例（scheduleTone / scheduleToneDelay）
 ├── engine/score/                ScoreMeasure 类型 / measureOnsets / measureSeconds / keyFromFifths
+├── engine/scale/index.ts        音阶引擎（scaleNoteNames / scaleMidi / scalePitchClasses）
+├── engine/chords/index.ts       和弦引擎（11 种质量模板 / 级数→音名·MIDI·罗马数字，随调号拼写）
+├── engine/harmony/index.ts      曲目和声自动识别（调号校正 + 模板匹配 + 进行合并）
+├── data/scales.ts               调式全集（12 大调 + 12 自然小调）
+├── data/chordProgressions.ts    常用和弦进行库（大调 7 种 / 小调 6 种）
 ├── data/pieces.ts               曲目元数据与 loader
 └── data/pieces/luv-sic-pt3.json 入库曲目（80 小节 1900 音符，全 fifths=-4）
 
@@ -119,8 +129,11 @@ git commit -m "fix(pieces): ..."
 | Ped. 踏板记号 | 未保留到 MusicXML | 属可选项；渲染层需支持 Pedal 记号再补 |
 | `docs/architecture.md` 记"1907 音符" | 与实测 1900 不符 | 下次动文档时顺手改为 1900 |
 | 连续播放整曲 | 已上线 | 可验证节奏变速（BPM 滑杆）下声画仍同步 |
+| 调式音阶补全（含 ♭A 大调） | **已完成（`1edbcae`）** | SCALES 24 项 + Scales 页大调/小调分组 |
+| 和弦进行板块 | **已完成（`720bce2`）** | 引擎 16/16 用例 + 页面 `/chords`；可继续扩充小调进行 |
+| 曲目调式/和弦进行自动识别 | **已完成（`a994dce`）** | 77/80 小节识别；识别逻辑为启发式，新曲目入库后需人工复核 |
 
-**下一位智能体第一件事**：跑 `npm test`（55/55）→ `npm run build` → 本地 preview 打开详情页确认 80 小节 SVG / 178 附点 / 87 连音线基线，再开始新需求。
+**下一位智能体第一件事**：跑 `npm test`（86/86）→ `npm run build` → 本地 preview 打开详情页确认 80 小节 SVG / 178 附点 / 87 连音线基线，再开始新需求。
 
 ## 8. 给下一位智能体的启动提示
 
