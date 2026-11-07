@@ -936,3 +936,32 @@ a.card:hover {
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* 每小节下方的和弦标注（识别结果） */
+.piece-measure-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.piece-measure__chord {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin-top: 3px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.piece-measure__chord-roman {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.piece-measure__chord-name {
+  color: var(--text-dim);
+}

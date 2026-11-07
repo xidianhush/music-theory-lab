@@ -27,6 +27,16 @@ export default function PieceDetail() {
 
   const harmony = useMemo(() => (piece ? analyzePieceHarmony(piece) : null), [piece])
 
+  /** 小节号 → 识别出的和弦（供每小节谱面下方标注） */
+  const chordByMeasure = useMemo(() => {
+    const map = new Map<number, { roman: string; name: string }>()
+    if (!harmony) return map
+    for (const h of harmony.measures) {
+      if (h.chord) map.set(h.measure, { roman: h.chord.roman, name: h.chord.name })
+    }
+    return map
+  }, [harmony])
+
   const timers = useRef<number[]>([])
   const loopRef = useRef(loop)
   loopRef.current = loop
@@ -348,16 +358,26 @@ export default function PieceDetail() {
                   <div className="piece-page__measures">
                     {piece.measures
                       .filter((m) => m.n >= p.measureStart && m.n <= p.measureEnd)
-                      .map((m) => (
-                        <PieceStaff
-                          key={m.n}
-                          measure={m}
-                          showPrefix={m.n === p.measureStart}
-                          hand={hand}
-                          active={playingN === m.n}
-                          onSelect={selectMeasure}
-                        />
-                      ))}
+                      .map((m) => {
+                        const ch = chordByMeasure.get(m.n)
+                        return (
+                          <div className="piece-measure-wrap" key={m.n}>
+                            <PieceStaff
+                              measure={m}
+                              showPrefix={m.n === p.measureStart}
+                              hand={hand}
+                              active={playingN === m.n}
+                              onSelect={selectMeasure}
+                            />
+                            {ch && (
+                              <div className="piece-measure__chord" title={`小节 ${m.n} 识别和弦`}>
+                                <span className="piece-measure__chord-roman">{ch.roman}</span>
+                                <span className="piece-measure__chord-name">{ch.name}</span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                   </div>
                 </div>
               ))}
