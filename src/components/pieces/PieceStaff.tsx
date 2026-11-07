@@ -34,7 +34,7 @@ interface PieceStaffProps {
 
 const TREBLE_Y = 26
 const BASS_Y = 122
-const H_BOTH = 212
+const H_BOTH = 236
 const H_SINGLE = 100
 
 /**
