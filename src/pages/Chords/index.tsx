@@ -237,7 +237,7 @@ export default function Chords() {
               </div>
 
               <div style={{ marginTop: 'var(--space-4)' }}>
-                <Piano highlighted={highlighted} active={null} />
+                <Piano highlighted={highlighted} active={[]} />
               </div>
             </>
           ),

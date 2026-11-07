@@ -100,7 +100,7 @@ export default function ScaleEarDrill() {
       {submitted && (
         <>
           <div style={{ marginTop: 'var(--space-4)' }}>
-            <Piano highlighted={midis} active={currentIndex !== null ? midis[currentIndex] : null} />
+            <Piano highlighted={midis} active={currentIndex !== null ? [midis[currentIndex]] : []} />
           </div>
           <div className="quiz-card__hint" style={{ marginTop: 'var(--space-3)' }}>
             上面是这条音阶在键盘上的形状，可再点「播放音阶」边听边看。

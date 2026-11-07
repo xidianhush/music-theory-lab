@@ -6,8 +6,8 @@ const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11]
 interface PianoProps {
   /** 需要常亮高亮的 MIDI（如音阶各音） */
   highlighted?: number[]
-  /** 当前播放中的音（更强高亮） */
-  active?: number | null
+  /** 当前播放中的音（更强高亮，可多音同时） */
+  active?: number[]
   onNoteClick?: (midi: number) => void
   /** 键盘范围（MIDI 编号），默认 C4–B5 */
   start?: number
@@ -17,12 +17,13 @@ interface PianoProps {
 /** 虚拟钢琴键盘：点击发声；支持高亮指定音（音阶演示 / 听音辨调） */
 export default function Piano({
   highlighted = [],
-  active = null,
+  active = [],
   onNoteClick,
   start = 60,
   end = 83,
 }: PianoProps) {
   const highlightSet = useMemo(() => new Set(highlighted), [highlighted])
+  const activeSet = useMemo(() => new Set(active), [active])
 
   const keys = useMemo(() => {
     const white: number[] = []
@@ -55,7 +56,7 @@ export default function Piano({
             key={midi}
             type="button"
             className={`piano__white ${
-              active === midi ? 'piano__key--active' : highlightSet.has(midi) ? 'piano__key--hl' : ''
+              activeSet.has(midi) ? 'piano__key--active' : highlightSet.has(midi) ? 'piano__key--hl' : ''
             }`}
             onClick={() => handleClick(midi)}
             aria-label={`播放 MIDI ${midi}`}
@@ -68,7 +69,7 @@ export default function Piano({
             key={midi}
             type="button"
             className={`piano__black ${
-              active === midi ? 'piano__key--active' : highlightSet.has(midi) ? 'piano__key--hl' : ''
+              activeSet.has(midi) ? 'piano__key--active' : highlightSet.has(midi) ? 'piano__key--hl' : ''
             }`}
             style={{ left: `${after * whiteWidthPct}%`, width: `calc(0.6 * ${whiteWidthPct}%)` }}
             onClick={() => handleClick(midi)}

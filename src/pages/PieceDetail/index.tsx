@@ -22,7 +22,7 @@ export default function PieceDetail() {
   const [playingN, setPlayingN] = useState<number | null>(null)
   const [playingAll, setPlayingAll] = useState(false)
   const [loop, setLoop] = useState(true)
-  const [activeMidi, setActiveMidi] = useState<number | null>(null)
+  const [activeMidi, setActiveMidi] = useState<number[]>([])
   const [activeProg, setActiveProg] = useState<number | null>(null)
 
   const harmony = useMemo(() => (piece ? analyzePieceHarmony(piece) : null), [piece])
@@ -66,7 +66,7 @@ export default function PieceDetail() {
     playingRef.current = null
     setPlayingN(null)
     setPlayingAll(false)
-    setActiveMidi(null)
+    setActiveMidi([])
   }
 
   /** 连续播放整曲（或从选中小节起）：各小节按相对延迟无缝衔接 */
@@ -91,10 +91,11 @@ export default function PieceDetail() {
         const dur = Math.max(0.09, (nextPos - o.quarterPos) * secPerQuarter * 0.92)
         for (const midi of o.midis) {
           audioEngine.scheduleToneDelay(AudioEngine.midiToFrequency(midi), delay, dur, 0.13)
-          timers.current.push(
-            window.setTimeout(() => setActiveMidi(midi), Math.max(0, delay * 1000 - 30)),
-          )
         }
+        // 每个发音点只注册一个 setTimeout（合并同拍点多音），避免上千定时器卡死 Safari
+        timers.current.push(
+          window.setTimeout(() => setActiveMidi(o.midis), Math.max(0, delay * 1000 - 30)),
+        )
       })
       // 小节开始时刻切换谱面高亮
       timers.current.push(
@@ -127,8 +128,8 @@ export default function PieceDetail() {
       const dur = Math.max(0.09, (nextPos - o.quarterPos) * secPerQuarter * 0.92)
       for (const midi of o.midis) {
         audioEngine.scheduleToneDelay(AudioEngine.midiToFrequency(midi), delay, dur, 0.13)
-        timers.current.push(window.setTimeout(() => setActiveMidi(midi), Math.max(0, delay * 1000 - 30)))
       }
+      timers.current.push(window.setTimeout(() => setActiveMidi(o.midis), Math.max(0, delay * 1000 - 30)))
     })
     const totalMs = total * 1000
     if (loopRef.current) {
@@ -283,7 +284,7 @@ export default function PieceDetail() {
                           ? harmony.progression[activeProg].pcs.map((pc) => 60 + pc)
                           : harmony.progression[0]?.pcs.map((pc) => 60 + pc) ?? []
                       }
-                      active={null}
+                      active={[]}
                     />
                   </div>
                 </>

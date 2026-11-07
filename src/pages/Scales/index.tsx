@@ -121,7 +121,7 @@ export default function Scales() {
                 <span className="metro__hint">蓝色 = 音阶各音，播放中的音更亮；点击键盘任意键也可发声</span>
               </div>
               <div style={{ marginTop: 'var(--space-4)' }}>
-                <Piano highlighted={midis} active={activeMidi} />
+                <Piano highlighted={midis} active={activeMidi !== null ? [activeMidi] : []} />
               </div>
             </>
           ),
